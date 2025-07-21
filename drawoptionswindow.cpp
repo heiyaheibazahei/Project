@@ -1,9 +1,15 @@
 #include "drawoptionswindow.h"
 #include "config.h"
+#include "groupmanagementdialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QFont>
+#include <random>       // 用于 mt19937 和相关工具
+#include <QInputDialog> // 用于获取用户输入的抽奖人数
+#include <QMessageBox>  // 用于显示抽奖结果
+#include <algorithm>    // 用于 std::shuffle
+#include <chrono>
 
 DrawOptionsWindow::DrawOptionsWindow(QWidget *parent)
     : QWidget(parent)
@@ -176,24 +182,53 @@ void DrawOptionsWindow::setupLayout()
 void DrawOptionsWindow::upperButton() {
     switch (currentState) {
         case DrawState::Initial:
+            m_isSingleMode = true;
             currentState = DrawState::Single_ChooseGroup;
             break;
         case DrawState::Single_ChooseGroup:
-            // group_flag = 1
+            m_useGroups = true;
             currentState = DrawState::ReadyToStart;
             break;
         case DrawState::Multi_ChooseRepeat:
-            // repeat_flag = 1
+            m_allowRepeats = true;
             currentState = DrawState::Multi_ChooseGroup;
             break;
         case DrawState::Multi_ChooseGroup:
-            // group_flag = 1
+            m_useGroups = true;
             currentState = DrawState::ReadyToStart;
             break;
         case DrawState::ReadyToStart:
-            // TODO: 在这里添加“开始抽奖/点名”的逻辑
-            qDebug() << "开始" << (isLottery ? "抽奖" : "点名");
-            // lottery();
+            if (m_useGroups) {
+                // 启动分组管理...
+                GroupManagementDialog dialog(this);
+                dialog.setInitialNames(m_nameList);
+                if (dialog.exec() == QDialog::Accepted) {
+                    m_definedGroups = dialog.getGroups();
+                    if (m_definedGroups.isEmpty()) {
+                        QMessageBox::information(this, "提示", "您没有创建任何小组，请重新设置。");
+                        resetToInitialState();
+                    } else {
+                        currentState = DrawState::GroupsDefined;
+                    }
+                }
+            } else {
+                // 不分组，直接抽奖
+                QStringList winners = performLottery();
+                if (!winners.isEmpty()) {
+                    QMessageBox::information(this, (isLottery ? "抽奖结果" : "点名结果"), winners.join("\n"));
+                }
+            }
+            break;
+
+        // --- 这是被修正的逻辑 ---
+        case DrawState::GroupsDefined:
+            // 唯一的作用就是“开始抽奖”，程序会根据已有的 m_isSingleMode 设置来执行
+            {
+                QStringList winners = performLottery();
+                if (!winners.isEmpty()) {
+                    QMessageBox::information(this, (isLottery ? "抽奖结果" : "点名结果"), winners.join("\n"));
+                }
+            }
             break;
     }
     updateUIForState();
@@ -203,22 +238,27 @@ void DrawOptionsWindow::upperButton() {
 void DrawOptionsWindow::bottomButton() {
     switch (currentState) {
         case DrawState::Initial:
+            m_isSingleMode = false;
             currentState = DrawState::Multi_ChooseRepeat;
             break;
         case DrawState::Single_ChooseGroup:
-            // group_flag = 0
+            m_useGroups = false;
             currentState = DrawState::ReadyToStart;
             break;
         case DrawState::Multi_ChooseRepeat:
-            // repeat_flag = 0
+            m_allowRepeats = false;
             currentState = DrawState::Multi_ChooseGroup;
             break;
         case DrawState::Multi_ChooseGroup:
-            // group_flag = 0
+            m_useGroups = false;
             currentState = DrawState::ReadyToStart;
             break;
         case DrawState::ReadyToStart:
-            // “重新设置模式”按钮
+            resetToInitialState();
+            break;
+
+        case DrawState::GroupsDefined:
+            // 唯一的作用就是“重置所有设置”
             resetToInitialState();
             break;
     }
@@ -238,9 +278,25 @@ void DrawOptionsWindow::backButtonClicked() {
             currentState = DrawState::Multi_ChooseRepeat;
             break;
         case DrawState::ReadyToStart:
-            // 从准备界面返回时，需要判断是从单人流程还是多人流程来的
-            // 为了简单起见，我们统一回到初始状态，或者你可以引入更复杂的前一状态记录
-            resetToInitialState(); // 直接重置更简单
+            resetToInitialState();
+            break;
+        // --- 新增逻辑 ---
+        case DrawState::GroupsDefined:
+            // "重新管理分组"按钮，再次打开分组对话框
+            // 这次我们传入已经定义好的分组，方便用户修改而不是从头开始
+            {
+                GroupManagementDialog dialog(this);
+                // 注意：这里需要修改 GroupManagementDialog 以支持接收并显示已有的分组
+                // 为了简化当前步骤，我们先实现简单的重新创建
+                dialog.setInitialNames(m_nameList);
+                if (dialog.exec() == QDialog::Accepted) {
+                    m_definedGroups = dialog.getGroups();
+                    if (m_definedGroups.isEmpty()) {
+                         QMessageBox::information(this, "提示", "您没有创建任何小组，请重新设置。");
+                         resetToInitialState();
+                    }
+                }
+            }
             break;
     }
     updateUIForState();
@@ -249,8 +305,18 @@ void DrawOptionsWindow::backButtonClicked() {
 // 实现重置函数
 void DrawOptionsWindow::resetToInitialState() {
     currentState = DrawState::Initial;
-    // 如果需要，在这里重置记录选择的变量，如 group_flag 等
+    // 重置所有记录的变量
+    m_isSingleMode = true;
+    m_allowRepeats = false;
+    m_useGroups = false;
+    m_definedGroups.clear(); // 确保清空已保存的分组
     updateUIForState();
+}
+
+// 实现新增的 setNamesList 函数
+void DrawOptionsWindow::setNamesList(const QStringList &names)
+{
+    m_nameList = names;
 }
 
 void DrawOptionsWindow::updateUIForState()
@@ -258,6 +324,8 @@ void DrawOptionsWindow::updateUIForState()
     QString modeText = isLottery ? "抽奖" : "点名";
 
     switch (currentState) {
+        // ... (Initial, Single_ChooseGroup, Multi_ChooseRepeat, Multi_ChooseGroup, ReadyToStart 的 case 保持不变) ...
+
         case DrawState::Initial:
             title->setText("选择" + modeText + "模式");
             singleDraw->setText("单人" + modeText);
@@ -278,8 +346,8 @@ void DrawOptionsWindow::updateUIForState()
 
         case DrawState::Multi_ChooseRepeat:
             title->setText("是否允许重复?");
-            singleDraw->setText("允许重复" + modeText);
-            multiDraw->setText("不允许重复" + modeText);
+            singleDraw->setText("允许重复");
+            multiDraw->setText("不允许重复");
             backButton->setText("返回上一级");
             singleDraw->show();
             multiDraw->show();
@@ -295,12 +363,111 @@ void DrawOptionsWindow::updateUIForState()
             break;
 
         case DrawState::ReadyToStart:
-            title->setText("设置完成");
+            title->setText("设置完成，可以开始");
             singleDraw->setText("开始" + modeText);
             multiDraw->setText("重新设置模式");
             backButton->setText("返回上一级");
             singleDraw->show();
             multiDraw->show();
             break;
+
+        case DrawState::GroupsDefined:
+            // 此时 m_isSingleMode 已经被确定，我们根据它来显示标题
+            title->setText(QString("分组已就绪 (%1)").arg(m_isSingleMode ? "单人模式" : "多人模式"));
+            singleDraw->setText("开始从小组" + modeText); // 唯一的“开始”按钮
+            multiDraw->setText("重置所有设置");          // 下方的按钮用于重置
+            backButton->setText("重新管理分组");
+            singleDraw->show();
+            multiDraw->show();
+            break;
     }
+}
+
+// 在 drawoptionswindow.cpp 的顶部，添加新头文件
+#include "groupmanagementdialog.h" // <-- 添加这一行
+
+// ... 其他 include ...
+
+QStringList DrawOptionsWindow::performLottery()
+{
+    // 抽奖前的名单检查
+    if (m_nameList.isEmpty()) {
+        QMessageBox::warning(this, "操作失败", "当前名单为空，请先导入或加载一个名单！");
+        return QStringList();
+    }
+    if (m_useGroups && m_definedGroups.isEmpty()) {
+        QMessageBox::warning(this, "操作失败", "分组信息为空，请先设置分组！");
+        return QStringList();
+    }
+
+    // 使用高精度系统时钟作为随机数种子
+    unsigned seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::mt19937 generator(seed);
+
+    QStringList winners;
+    QStringList targetNameList; // 这是本次抽奖真正要操作的目标名单
+
+    if (m_useGroups) {
+        // 如果是分组模式，从已保存的分组中选择一个
+        bool ok;
+        QString selectedGroup = QInputDialog::getItem(this, "选择小组", "请选择要进行抽奖/点名的小组：", m_definedGroups.keys(), 0, false, &ok);
+        if (!ok || selectedGroup.isEmpty()) {
+            return QStringList(); // 用户取消
+        }
+        targetNameList = m_definedGroups.value(selectedGroup);
+    } else {
+        // 非分组模式，使用总名单
+        targetNameList = m_nameList;
+    }
+
+    // =================================================================================
+    //  ↓↓↓ 核心抽奖逻辑 (完全复用您的代码，但操作对象是 targetNameList) ↓↓↓
+    // =================================================================================
+    if (targetNameList.isEmpty()){
+        QMessageBox::warning(this, "操作失败", "选中的小组内没有任何成员！");
+        return QStringList();
+    }
+
+    std::vector<QString> nameVector;
+    for(const QString& name : targetNameList) {
+        nameVector.push_back(name);
+    }
+
+    if (m_isSingleMode) {
+        // --- 单人抽奖/点名 ---
+        std::uniform_int_distribution<int> distribution(0, nameVector.size() - 1);
+        int randomIndex = distribution(generator);
+        winners.append(nameVector[randomIndex]);
+    } else {
+        // --- 多人抽奖/点名 ---
+        bool ok;
+        int maxNum = nameVector.size();
+
+        int numToDraw = QInputDialog::getInt(this, "设置人数",
+                                             QString("请从 '%1' (共%2人) 中抽取几人:").arg(m_useGroups ? m_definedGroups.key(targetNameList) : "总名单").arg(maxNum),
+                                             1, 1, (m_allowRepeats ? 1000 : maxNum), 1, &ok);
+
+        if (!ok) {
+            return QStringList();
+        }
+
+        if (m_allowRepeats) { // 多人允许重复
+            for (int i = 0; i < numToDraw; i++) {
+                std::uniform_int_distribution<int> distribution(0, nameVector.size() - 1);
+                int randomIndex = distribution(generator);
+                winners.append(nameVector[randomIndex]);
+            }
+        } else { // 多人不允许重复
+            if (numToDraw > nameVector.size()) {
+                 QMessageBox::warning(this, "设置错误", "非重复抽奖的人数不能超过名单总人数！");
+                 return QStringList();
+            }
+            std::shuffle(nameVector.begin(), nameVector.end(), generator);
+            for (int i = 0; i < numToDraw; i++) {
+                winners.append(nameVector[i]);
+            }
+        }
+    }
+
+    return winners;
 }

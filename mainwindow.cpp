@@ -269,8 +269,10 @@ void MainWindow::showDrawOptions()
     //按钮会发出clicked信号，对应槽函数又会发出backToMenu的信号，再调用backToMainWindow的槽函数
     connect(drawOptionsWindow, &DrawOptionsWindow::backToMainMenu,
             this, &MainWindow::backToMainWindow);
-    // 隐藏主窗口
-    this->hide();
+
+    // 新增：在显示窗口前，将当前名单传递过去
+    drawOptionsWindow->setNamesList(this->currentNameList);
+    this->hide();// 隐藏主窗口
 
     // 显示抽奖选项窗口
     drawOptionsWindow->show();

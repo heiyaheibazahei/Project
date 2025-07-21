@@ -29,7 +29,8 @@ SOURCES += \
     drawoptionswindow.cpp \
     filesystem.cpp \
     editdialog.cpp \
-    managedocumentsdialog.cpp
+    managedocumentsdialog.cpp \
+    groupmanagementdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -37,7 +38,8 @@ HEADERS += \
     drawoptionswindow.h \
     filesystem.h \
     editdialog.h \
-    managedocumentsdialog.h
+    managedocumentsdialog.h \
+    groupmanagementdialog.h
 
 FORMS += \
         mainwindow.ui

@@ -3,9 +3,11 @@
 
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QStringList>
 #include <QWidget>
 #include "QLabel"
 #include <QDebug>
+#include <QMap>
 
 class DrawOptionsWindow : public QWidget
 {
@@ -32,6 +34,7 @@ signals:
     //返回主界面的函数
     void backToMainMenu();
 
+
 public slots:
 
     //返回按钮的槽函数
@@ -39,6 +42,7 @@ public slots:
     void upperButton();
     void bottomButton();
     void resetToInitialState(); // 用于重置
+    void setNamesList(const QStringList &names); // 用于从主窗口接收名单
 
 private:
     // 1. 定义状态枚举
@@ -47,17 +51,27 @@ private:
         Single_ChooseGroup,   // 已选单人，进入选择“分组”或“不分组”
         Multi_ChooseRepeat,   // 已选多人，进入选择“重复”或“不重复”
         Multi_ChooseGroup,    // 已选多人和重复选项，进入选择“分组”或“不分组”
-        ReadyToStart          // 所有选项已确定，准备开始
+        ReadyToStart,          // 所有选项已确定，准备开始
+        GroupsDefined
     };
 
     // 2. 用一个状态变量替换所有 flags
     DrawState currentState;
+    // 新增成员变量来记录用户的选择
+    QStringList m_nameList;      // 用于存储当前抽奖/点名的名单
+    bool m_isSingleMode;         // true: 单人, false: 多人
+    bool m_allowRepeats;         // true: 允许重复, false: 不允许
+    bool m_useGroups;            // true: 分组, false: 不分组 (此功能待实现)
+
+    // 用于持久化存储分组结果
+    QMap<QString, QStringList> m_definedGroups;
 
     // 3. 声明一个更新UI的私有函数
     void updateUIForState();
 
     void createOptionButtons();
     void setupLayout();
+    QStringList performLottery(); // 声明核心抽奖函数
 
 
     QPushButton *backButton;     // 返回按钮
