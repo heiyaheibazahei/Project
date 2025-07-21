@@ -1,1 +1,3 @@
-# Project
+这个版本就是实现了文件的读入和读出和项目的导入导出保存
+固定存储路径为：D:\Project\Project\savedProject
+增添了一个模式切换的按钮
