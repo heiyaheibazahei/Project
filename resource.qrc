@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/res">
+    <qresource prefix="/">
         <file>res/cry.jpg</file>
         <file>res/winwinwin.png</file>
         <file>res/planet.webp</file>
