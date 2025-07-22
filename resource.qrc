@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>738f7e3f6f6e11e7ad9ca61ace961c45.jpg</file>
-        <file>5461.png_860.png</file>
-        <file>planet-581239_1280.webp</file>
+        <file>res/cry.jpg</file>
+        <file>res/planet.webp</file>
+        <file>res/winwinwin.png</file>
     </qresource>
 </RCC>

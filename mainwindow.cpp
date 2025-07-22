@@ -11,6 +11,9 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QList>
+#include <QVector>
+#include "luckyrecordswindow.h"
+QVector<QString> currentNameList;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -55,9 +58,13 @@ MainWindow::MainWindow(QWidget *parent) :
     import= new QPushButton("导入名单",this);
     importButton_1();
 
-    //最后就是文件管理的按钮
+    //之后就是文件管理的按钮
     fileManage= new QPushButton("管理文档",this);
     fileManageButton();
+
+    //最后是中奖记录的按钮
+    luckyRecords=new QPushButton("抽取记录",this);
+    luckyRecordsButton();
 }
 
 MainWindow::~MainWindow()
@@ -145,6 +152,7 @@ void MainWindow::mainMenuinitialize(){
                                          cursor: pointer;
                                      }
                                  )");
+
 }
 
 void MainWindow::setMenuBackground(){
@@ -175,6 +183,7 @@ void MainWindow::startButton(){
     // 添加按钮点击事件
     connect(start, &QPushButton::clicked, this, &MainWindow::showDrawOptions);
 }
+
 
 void MainWindow::setMenuTitle(){
     QWidget *centralWidget = new QWidget(this);
@@ -267,8 +276,14 @@ void MainWindow::showDrawOptions()
     //按钮会发出clicked信号，对应槽函数又会发出backToMenu的信号，再调用backToMainWindow的槽函数
     connect(drawOptionsWindow, &DrawOptionsWindow::backToMainMenu,
             this, &MainWindow::backToMainWindow);
-    // 隐藏主窗口
-    this->hide();
+
+    // 新增：在显示窗口前，将当前名单传递过去
+    drawOptionsWindow->setNamesList(this->currentNameList);
+    this->hide();// 隐藏主窗口
+    drawOptionsWindow->setNamesList(this->currentNameList);
+
+    // 新增：传递FileSystem实例
+    drawOptionsWindow->setFileSystem(this->fileSystem); // 需在DrawOptionsWindow中添加setFileSystem方法
 
     // 显示抽奖选项窗口
     drawOptionsWindow->show();
@@ -282,57 +297,8 @@ void MainWindow::backToMainWindow()
         drawOptionsWindow->hide();
     }
     this->show();
+
 }
-
-/*void MainWindow::setupFileManager()
-{
-    // 导入名单按钮
-    importButton = new QPushButton("导入名单", this);
-    importButton->setObjectName("importButton");
-    importButton->move(static_cast<int>(WIN_WIDTH*0.5-import->width()*0.5),BUTTON_HEIGHT*4.7);
-    setSize(*importButton);
-    importButton->setStyleSheet("font-size: 16px; font-weight: bold;");
-    importButton->setStyleSheet(
-        "QPushButton {"
-        "  background-color: #e7495a;"
-        "  color: white;"
-        "  border-radius: 10px;"
-        "  font-size: 24px;"
-        "  padding: 10px 20px;"
-        "  font-weight: bold;"
-        "}"
-        "QPushButton:hover {"
-        "  background-color: #c03040;"
-        "}"
-    );
-    connect(importButton, &QPushButton::clicked, this, &MainWindow::onImportButtonClicked);
-
-    // 管理文档按钮
-    manageButton = new QPushButton("管理文档", this);
-    manageButton->setObjectName("manageButton");
-    setSize(*manageButton);
-    manageButton->move(static_cast<int>(WIN_WIDTH*0.5-import->width()*0.5),BUTTON_HEIGHT*6.5);
-    manageButton->setStyleSheet("font-size: 16px; font-weight: bold;");
-    connect(manageButton, &QPushButton::clicked, this, &MainWindow::onManageButtonClicked);
-
-    // 根据原有布局添加到合适位置
-   /* // 假设我们添加到主界面的底部
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(importButton);
-    buttonLayout->addWidget(manageButton);
-
-    // 查看原有代码使用的布局
-    // 这里需要根据实际情况添加到布局中
-    if (ui->verticalLayout) {
-        ui->verticalLayout->addLayout(buttonLayout);
-    } else {
-        // 创建新的布局并添加
-        QWidget *buttonWidget = new QWidget(this);
-        buttonWidget->setLayout(buttonLayout);
-        ui->verticalLayout->addWidget(buttonWidget);
-    }
-
-}*/
 
 void MainWindow::onImportButtonClicked()
 {
@@ -441,4 +407,28 @@ void MainWindow::onModeChanged() {
         drawOptionsWindow->multiDraw->setText("多人点名");
 
     }
+}
+
+void MainWindow::showLuckyRecords() {
+    LuckyRecordsWindow *window = new LuckyRecordsWindow(this);
+    window->show();
+}
+
+void MainWindow::luckyRecordsButton(){
+    luckyRecords->setStyleSheet(R"(
+        QPushButton {
+            background-color: #FF9800;
+            color: white;
+            border-radius: 10px;
+            font-size: 16px;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+        QPushButton:hover {
+            background-color: #F57C00;
+        }
+    )");
+    luckyRecords->resize(120,40);
+    luckyRecords->move(this->width()-luckyRecords->width(),0);
+     connect(luckyRecords, &QPushButton::clicked, this, &MainWindow::showLuckyRecords);
 }

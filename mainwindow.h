@@ -21,15 +21,20 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    //主界面四个按钮的设置
+    //主界面五个按钮的设置
     QPushButton *exit;
     QPushButton *import;
     QPushButton *fileManage;
     QPushButton *start;
+    //中奖记录按钮
+    QPushButton *luckyRecords;
     void setSize(QPushButton &btn);
 
     //主界面初始化
     void mainMenuinitialize();
+
+    //主界面布局
+    void setUpLayout();
 
     //主界面的背景
     void setMenuBackground();
@@ -55,13 +60,16 @@ public:
     //管理名单的按钮
     void fileManageButton();
 
+    void luckyRecordsButton();
+
 private slots:
     void onImportButtonClicked();
     void onManageButtonClicked();
 //    void showProjectContent(const QString& projectName);
     void loadProjectForUse(const QString& projectName);
     void handleProjectSaved(const QString &projectName, const QStringList &names);
-    void onModeChanged();
+    void onModeChanged();//模式切换
+    void showLuckyRecords();//展示中奖记录
 
 private:
 

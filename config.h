@@ -10,14 +10,14 @@
 #define BUTTON_HEIGHT 60
 
 // 窗口图标和图片路径
-#define WIN_PATH ":/5461.png_860.png"
-#define SURETOEXIT_PATH ":/738f7e3f6f6e11e7ad9ca61ace961c45.jpg"
+#define WIN_PATH ":/res/winwinwin.png"
+#define SURETOEXIT_PATH ":/res/cry.jpg"
 
 // 布局辅助参数
 #define BOTTOM_MARGIN 40//底部边距
 #define TOP_MARGIN 80 // 顶部边距
 
 //默认主界面背景
-#define MAINMENU_PATH ":/planet-581239_1280.webp"
+#define MAINMENU_PATH ":/res/planet.webp"
 
 #endif // CONFIG_H
