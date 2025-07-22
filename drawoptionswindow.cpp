@@ -10,30 +10,23 @@
 #include <QMessageBox>  // 用于显示抽奖结果
 #include <algorithm>    // 用于 std::shuffle
 #include <chrono>
+#include "groupmanagementdialog.h" // <-- 添加这一行
+#include <QTime>
+#include <cstdlib>
+#include "fireworkeffect.h"
+#include <QMediaPlayer>
 
 DrawOptionsWindow::DrawOptionsWindow(QWidget *parent)
     : QWidget(parent)
 {
+    qsrand(QTime::currentTime().msec());
+
     // 设置窗口属性
     setWindowTitle("抽奖选项");
     setFixedSize(WIN_WIDTH, WIN_HEIGHT);
     setWindowIcon(QPixmap(WIN_PATH));
 
     isLottery=false; // 默认点名模式
-
-    // 创建标题
-    title = new QLabel("选择抽奖模式", this);
-    QFont titleFont("Microsoft YaHei", 28, QFont::Bold);
-    title->setFont(titleFont);
-    title->setAlignment(Qt::AlignCenter);
-    title->setStyleSheet(
-        "QLabel {"
-        "  color: #e67e22;"
-        "  background-color: rgba(255, 255, 255, 0.85);"
-        "  border-radius: 15px;"
-        "  padding: 15px;"
-        "}"
-    );
 
     // 创建选项按钮
     createOptionButtons();
@@ -76,6 +69,9 @@ DrawOptionsWindow::DrawOptionsWindow(QWidget *parent)
     QPalette palette = this->palette();
     palette.setBrush(QPalette::Window, QBrush(QPixmap(MAINMENU_PATH).scaled(WIN_WIDTH, WIN_HEIGHT)));
     this->setPalette(palette);
+    // 初始化中奖音效播放器
+    m_cheerPlayer = new QMediaPlayer(this);
+    m_cheerPlayer->setMedia(QUrl(CHEER_MUSIC_PATH));
 }
 
 void DrawOptionsWindow::createOptionButtons()
@@ -215,7 +211,8 @@ void DrawOptionsWindow::upperButton() {
                 // 不分组，直接抽奖
                 QStringList winners = performLottery();
                 if (!winners.isEmpty()) {
-                    QMessageBox::information(this, (isLottery ? "抽奖结果" : "点名结果"), winners.join("\n"));
+                    performRolling(rollingWindow,winners);
+
                 }
             }
             break;
@@ -226,7 +223,8 @@ void DrawOptionsWindow::upperButton() {
             {
                 QStringList winners = performLottery();
                 if (!winners.isEmpty()) {
-                    QMessageBox::information(this, (isLottery ? "抽奖结果" : "点名结果"), winners.join("\n"));
+                    performRolling(rollingWindow,winners);
+
                 }
             }
             break;
@@ -327,7 +325,7 @@ void DrawOptionsWindow::updateUIForState()
         // ... (Initial, Single_ChooseGroup, Multi_ChooseRepeat, Multi_ChooseGroup, ReadyToStart 的 case 保持不变) ...
 
         case DrawState::Initial:
-            title->setText("选择" + modeText + "模式");
+            //title->setText("选择" + modeText + "模式");
             singleDraw->setText("单人" + modeText);
             multiDraw->setText("多人" + modeText);
             backButton->setText("返回主菜单");
@@ -336,7 +334,7 @@ void DrawOptionsWindow::updateUIForState()
             break;
 
         case DrawState::Single_ChooseGroup:
-            title->setText("是否需要分组?");
+          //  title->setText("是否需要分组?");
             singleDraw->setText("分组" + modeText);
             multiDraw->setText("不分组" + modeText);
             backButton->setText("返回上一级");
@@ -345,7 +343,7 @@ void DrawOptionsWindow::updateUIForState()
             break;
 
         case DrawState::Multi_ChooseRepeat:
-            title->setText("是否允许重复?");
+          //  title->setText("是否允许重复?");
             singleDraw->setText("允许重复");
             multiDraw->setText("不允许重复");
             backButton->setText("返回上一级");
@@ -354,7 +352,7 @@ void DrawOptionsWindow::updateUIForState()
             break;
 
         case DrawState::Multi_ChooseGroup:
-            title->setText("是否需要分组?");
+           // title->setText("是否需要分组?");
             singleDraw->setText("分组" + modeText);
             multiDraw->setText("不分组" + modeText);
             backButton->setText("返回上一级");
@@ -363,7 +361,7 @@ void DrawOptionsWindow::updateUIForState()
             break;
 
         case DrawState::ReadyToStart:
-            title->setText("设置完成，可以开始");
+           // title->setText("设置完成，可以开始");
             singleDraw->setText("开始" + modeText);
             multiDraw->setText("重新设置模式");
             backButton->setText("返回上一级");
@@ -373,7 +371,7 @@ void DrawOptionsWindow::updateUIForState()
 
         case DrawState::GroupsDefined:
             // 此时 m_isSingleMode 已经被确定，我们根据它来显示标题
-            title->setText(QString("分组已就绪 (%1)").arg(m_isSingleMode ? "单人模式" : "多人模式"));
+           // title->setText(QString("分组已就绪 (%1)").arg(m_isSingleMode ? "单人模式" : "多人模式"));
             singleDraw->setText("开始从小组" + modeText); // 唯一的“开始”按钮
             multiDraw->setText("重置所有设置");          // 下方的按钮用于重置
             backButton->setText("重新管理分组");
@@ -382,11 +380,6 @@ void DrawOptionsWindow::updateUIForState()
             break;
     }
 }
-
-// 在 drawoptionswindow.cpp 的顶部，添加新头文件
-#include "groupmanagementdialog.h" // <-- 添加这一行
-
-// ... 其他 include ...
 
 QStringList DrawOptionsWindow::performLottery()
 {
@@ -469,5 +462,41 @@ QStringList DrawOptionsWindow::performLottery()
         }
     }
 
+    if (m_fileSystem && !winners.isEmpty()) {
+            if (m_fileSystem->saveLuckyPersons(winners)) {
+               /* QMessageBox::information(this, "保存成功",
+                    QString("中奖人员已保存到：\n%1").arg(m_fileSystem->getLuckyPath())); */
+            } else {
+                QMessageBox::warning(this, "保存失败", "无法保存中奖人员名单");
+            }
+        }
+
+
     return winners;
+}
+
+void DrawOptionsWindow::setFileSystem(FileSystem* fs) {
+    m_fileSystem = fs;
+}
+
+void DrawOptionsWindow::performRolling(RollingEffectWindow *rollingWindow,QStringList &winners){
+    //首先需要一个滚动特效，其次需要一个抽中名单
+
+    rollingWindow = new RollingEffectWindow(m_nameList, winners, this);
+    rollingWindow->move(WIN_WIDTH*0.5-rollingWindow->width()*0.5,singleDraw->y()-100);
+    rollingWindow->show();
+    rollingWindow->startRolling();
+
+    // 连接滚动结束信号
+
+    connect(rollingWindow, &RollingEffectWindow::rollingFinished, this, [this, winners]() {
+    // 结果显示
+        if (isLottery) {
+                FireworkEffect *fireworks = new FireworkEffect(this);
+                m_cheerPlayer->play(); // 播放欢呼音效
+                fireworks->startFireworks();
+            }
+
+    QMessageBox::information(this, (isLottery ? "抽奖结果" : "点名结果"), winners.join("\n"));
+    });
 }

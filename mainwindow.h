@@ -9,6 +9,9 @@
 #include "editdialog.h"
 #include "managedocumentsdialog.h"
 #include <QCheckBox>
+
+class QMediaPlayer;
+
 namespace Ui {
 class MainWindow;
 }
@@ -21,15 +24,26 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    //主界面四个按钮的设置
+    //主界面五个按钮的设置
     QPushButton *exit;
     QPushButton *import;
     QPushButton *fileManage;
     QPushButton *start;
+    QPushButton *luckyRecords;//中奖记录按钮
+
+    //更换背景图片
+    QPushButton *changeBackground;
+    QString backgroundPic;
+
+
+    //调整按钮大小样式这些
     void setSize(QPushButton &btn);
 
     //主界面初始化
     void mainMenuinitialize();
+
+    //主界面布局
+    void setUpLayout();
 
     //主界面的背景
     void setMenuBackground();
@@ -40,8 +54,9 @@ public:
 
     //模式切换按钮
     QCheckBox *m_modeCheckBox;
+
     // 模式状态，false就是点名模式
-     bool m_isLotteryMode = false;
+    bool m_isLotteryMode = false;
 
     //退出按钮的功能
     void exitButton();
@@ -55,20 +70,30 @@ public:
     //管理名单的按钮
     void fileManageButton();
 
+    void luckyRecordsButton();
+
+    void changeBackgroundButton();
+
+    QString getRandomName();
+
+    QStringList getRandomNames(int count);
+
 private slots:
     void onImportButtonClicked();
     void onManageButtonClicked();
 //    void showProjectContent(const QString& projectName);
     void loadProjectForUse(const QString& projectName);
     void handleProjectSaved(const QString &projectName, const QStringList &names);
-    void onModeChanged();
-
+    void onModeChanged();//模式切换
+    void showLuckyRecords();//展示中奖记录
+    void changeBackgroundClicked();
 private:
 
     FileSystem *fileSystem; // 添加文件系统
     QPushButton *importButton;// 添加两个新按钮到界面
     QPushButton *manageButton;
 
+    QMediaPlayer *m_backgroundMusicPlayer;
 
     void setupFileManager();    // 在UI初始化时创建这些按钮
 

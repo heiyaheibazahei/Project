@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui multimedia
 CONFIG+=resource_big
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,7 +30,10 @@ SOURCES += \
     filesystem.cpp \
     editdialog.cpp \
     managedocumentsdialog.cpp \
-    groupmanagementdialog.cpp
+    groupmanagementdialog.cpp \
+    luckyrecordswindow.cpp \
+    rollingeffectwindow.cpp \
+    fireworkeffect.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -39,7 +42,10 @@ HEADERS += \
     filesystem.h \
     editdialog.h \
     managedocumentsdialog.h \
-    groupmanagementdialog.h
+    groupmanagementdialog.h \
+    luckyrecordswindow.h \
+    rollingeffectwindow.h \
+    fireworkeffect.h
 
 FORMS += \
         mainwindow.ui

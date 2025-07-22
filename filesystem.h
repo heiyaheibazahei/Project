@@ -19,10 +19,12 @@ public:
     QStringList loadProject(const QString& projectName);
     QStringList getProjectNames();
     bool deleteProject(const QString& projectName);
+    bool saveLuckyPersons(const QStringList& winners); // 新增：保存中奖人员
 
     // 文件导入
     QStringList importTxtFile(const QString& filePath);
     QStringList importCsvFile(const QString& filePath, int nameColumn = 0);
+    QString getLuckyPath();
 
 signals:
     void projectSaved(const QString& projectName);
@@ -34,6 +36,8 @@ private:
 
     QString getProjectFilePath(const QString& projectName);
     void ensureProjectDir();
+    QString m_luckyPath;   // 中奖人员保存路径
+    void ensureDirExists(const QString& path); // 确保保存中奖记录的目录存在
 };
 
 #endif // FILESYSTEM_H

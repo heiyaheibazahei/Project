@@ -3,5 +3,8 @@
         <file>res/cry.jpg</file>
         <file>res/planet.webp</file>
         <file>res/winwinwin.png</file>
+        <file>music/cheer.mp3</file>
+        <file>music/rollingEffect.mp3</file>
+        <file>music/TouhouRoseQuartz.mp3</file>
     </qresource>
 </RCC>

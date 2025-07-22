@@ -6,7 +6,7 @@
 #define WIN_HEIGHT 600
 
 // 按钮尺寸
-#define BUTTON_WIDTH 180
+#define BUTTON_WIDTH 220
 #define BUTTON_HEIGHT 60
 
 // 窗口图标和图片路径
@@ -19,5 +19,12 @@
 
 //默认主界面背景
 #define MAINMENU_PATH ":/res/planet.webp"
+
+// 音效文件路径
+#define ROLLING_MUSIC_PATH "qrc:/music/rollingEffect.mp3"
+#define CHEER_MUSIC_PATH "qrc:/music/cheer.mp3"
+
+// 全局背景音乐
+#define BACKGROUND_MUSIC_PATH "qrc:/music/TouhouRoseQuartz.mp3"
 
 #endif // CONFIG_H

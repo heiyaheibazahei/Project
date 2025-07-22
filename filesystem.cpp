@@ -5,16 +5,20 @@
 #include <QDebug>
 #include <QDir>
 #include <QCoreApplication>
-
+#include <QDateTime>
+#include <QTextCodec>
 FileSystem::FileSystem(QObject *parent) : QObject(parent)
 {
     // 设置项目存储路径
     QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     projectPath = "D:/Project/Project/savedProject/";
+    m_luckyPath = "D:/Project/Project/luckyPersons";
   //  projectPath = appDataDir + "/projects/";
 
     // 确保项目目录存在
     ensureProjectDir();
+    //确保中奖记录的路径存在
+    ensureDirExists(m_luckyPath);
 }
 
 void FileSystem::ensureProjectDir()
@@ -178,4 +182,39 @@ QStringList FileSystem::importCsvFile(const QString& filePath, int nameColumn)
 
     file.close();
     return names;
+}
+
+void FileSystem::ensureDirExists(const QString& path) {
+    QDir dir(path);
+    if (!dir.exists()) {
+        dir.mkpath(path); // 创建目录（包括父目录）
+    }
+}
+
+bool FileSystem::saveLuckyPersons(const QStringList& winners) {
+    if (winners.isEmpty()) return false; // 无中奖人员，无需保存
+
+    // 生成唯一文件名（包含日期时间，避免重复）
+    QString fileName = QString("lucky_%1.txt")
+        .arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
+    QString filePath = QDir(m_luckyPath).filePath(fileName);
+
+    // 写入文件
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return false; // 文件打开失败
+    }
+
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    for (const QString& name : winners) {
+        out << name << endl; // 每行一个名字
+    }
+
+    file.close();
+    return true; // 保存成功
+}
+
+QString FileSystem::getLuckyPath(){
+    return m_luckyPath;
 }
