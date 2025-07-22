@@ -6,7 +6,7 @@
 #define WIN_HEIGHT 600
 
 // 按钮尺寸
-#define BUTTON_WIDTH 180
+#define BUTTON_WIDTH 220
 #define BUTTON_HEIGHT 60
 
 // 窗口图标和图片路径

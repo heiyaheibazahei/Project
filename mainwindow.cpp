@@ -13,6 +13,8 @@
 #include <QList>
 #include <QVector>
 #include "luckyrecordswindow.h"
+#include <QTime>
+#include <cstdlib>
 QVector<QString> currentNameList;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -23,16 +25,18 @@ MainWindow::MainWindow(QWidget *parent) :
     fileSystem(new FileSystem(this)), // 添加文件系统实例
   drawOptionsWindow(nullptr)
 {
+    qsrand(QTime::currentTime().msec());
     ui->setupUi(this);
 
 
     //主界面的初始化
     m_modeCheckBox=new QCheckBox("切换模式",this);
     drawOptionsWindow = new DrawOptionsWindow();
-
+    background=MAINMENU_PATH;
     mainMenuinitialize();
     setMenuBackground();
     setMenuTitle();
+
     // 添加其余按钮功能
 
     // 连接文件系统信号
@@ -65,6 +69,11 @@ MainWindow::MainWindow(QWidget *parent) :
     //最后是中奖记录的按钮
     luckyRecords=new QPushButton("抽取记录",this);
     luckyRecordsButton();
+
+    changeBackground=new QPushButton("更改背景",this);
+    changeBackgroundButton();
+
+
 }
 
 MainWindow::~MainWindow()
@@ -74,6 +83,25 @@ MainWindow::~MainWindow()
         delete drawOptionsWindow;
     }
     delete ui;
+}
+
+void MainWindow::changeBackgroundButton(){
+    changeBackground->setFixedSize(120,40);
+    changeBackground->move(WIN_WIDTH-changeBackground->width(),WIN_HEIGHT-changeBackground->height());
+    changeBackground->setStyleSheet(
+        "QPushButton {"
+        "  background-color: #FF69B4;"
+        "  color: white;"
+        "  border-radius: 10px;"
+        "  font-size: 16px;"
+        "  padding: 10px 20px;"
+        "  font-weight: bold;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #FF1493;"
+        "}"
+        );
+    connect(changeBackground,&QPushButton::clicked,this,&MainWindow::changeBackgroundClicked);
 }
 
 void MainWindow::exitButton()
@@ -152,13 +180,15 @@ void MainWindow::mainMenuinitialize(){
                                          cursor: pointer;
                                      }
                                  )");
-
+    QPalette palette_2 = drawOptionsWindow->palette();
+    palette_2.setBrush(QPalette::Window, QBrush(QPixmap(background).scaled(WIN_WIDTH, WIN_HEIGHT)));
+    drawOptionsWindow->setPalette(palette_2);
 }
 
 void MainWindow::setMenuBackground(){
     // 设置主窗口背景
         QPalette palette = this->palette();
-       palette.setBrush(QPalette::Window, QBrush(QPixmap(MAINMENU_PATH).scaled(WIN_WIDTH, WIN_HEIGHT)));
+       palette.setBrush(QPalette::Window, QBrush(QPixmap(background).scaled(WIN_WIDTH, WIN_HEIGHT)));
        this->setPalette(palette);
 }
 
@@ -334,24 +364,6 @@ void MainWindow::onManageButtonClicked()
     dialog.exec();
 }
 
-/*
-void MainWindow::showProjectContent(const QString& projectName)
-{
-    // 从文件系统加载项目
-    QStringList names = fileSystem->loadProject(projectName);
-
-    // 在编辑对话框中显示
-    EditDialog dialog(this);
-    dialog.setNameList(names);
-    dialog.setWindowTitle("查看项目: " + projectName);
-
-    // 禁用编辑功能（只查看）
-    dialog.setEnabled(false);
-
-    dialog.exec();
-}
-*/
-
 void MainWindow::handleProjectSaved(const QString &projectName, const QStringList &names)
 {
     // 使用FileSystem保存项目
@@ -362,8 +374,6 @@ void MainWindow::handleProjectSaved(const QString &projectName, const QStringLis
         QMessageBox::warning(this, "保存失败", "保存项目失败，请重试");
     }
 }
-
-// mainwindow.cpp
 
 void MainWindow::loadProjectForUse(const QString& projectName)
 {
@@ -431,4 +441,44 @@ void MainWindow::luckyRecordsButton(){
     luckyRecords->resize(120,40);
     luckyRecords->move(this->width()-luckyRecords->width(),0);
      connect(luckyRecords, &QPushButton::clicked, this, &MainWindow::showLuckyRecords);
+}
+
+QString MainWindow::getRandomName() {
+    if (currentNameList.isEmpty()) return "";
+
+    // 使用 qrand() 替代 QRandomGenerator
+    int index = qrand() % currentNameList.size();
+    return currentNameList[index];
+}
+
+QStringList MainWindow::getRandomNames(int count) {
+    QStringList tempList = currentNameList;
+    QStringList winners;
+
+    for (int i = 0; i < count && !tempList.isEmpty(); ++i) {
+        // 使用 qrand() 替代 QRandomGenerator
+        int index = qrand() % tempList.size();
+        winners.append(tempList.takeAt(index));
+    }
+
+    return winners;
+}
+
+void MainWindow::changeBackgroundClicked(){
+    background= QFileDialog::getOpenFileName(this,"选择图片",QDir::homePath(),"(*.jpg *.png)");
+    if(background==NULL){
+        background=MAINMENU_PATH;
+    }
+    qDebug()<<background<<endl;
+
+    QPixmap pixmap(background);
+    if (pixmap.isNull()) {
+        qDebug() << "QPixmap 加载失败或为空";
+        return;
+    }
+    //QFile *backgroundFile= new QFile(background);
+    QPalette palette=this->palette();
+    palette.setBrush(QPalette::Window, QBrush(pixmap.scaled(WIN_WIDTH, WIN_HEIGHT)));
+    this->setPalette(palette);
+    drawOptionsWindow->setPalette(palette);
 }

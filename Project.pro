@@ -31,7 +31,9 @@ SOURCES += \
     editdialog.cpp \
     managedocumentsdialog.cpp \
     groupmanagementdialog.cpp \
-    luckyrecordswindow.cpp
+    luckyrecordswindow.cpp \
+    rollingeffectwindow.cpp \
+    fireworkeffect.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -41,7 +43,9 @@ HEADERS += \
     editdialog.h \
     managedocumentsdialog.h \
     groupmanagementdialog.h \
-    luckyrecordswindow.h
+    luckyrecordswindow.h \
+    rollingeffectwindow.h \
+    fireworkeffect.h
 
 FORMS += \
         mainwindow.ui

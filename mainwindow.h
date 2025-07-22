@@ -26,8 +26,14 @@ public:
     QPushButton *import;
     QPushButton *fileManage;
     QPushButton *start;
-    //中奖记录按钮
-    QPushButton *luckyRecords;
+    QPushButton *luckyRecords;//中奖记录按钮
+
+    //更换背景图片
+    QPushButton *changeBackground;
+    QString backgroundPic;
+
+
+    //调整按钮大小样式这些
     void setSize(QPushButton &btn);
 
     //主界面初始化
@@ -62,6 +68,12 @@ public:
 
     void luckyRecordsButton();
 
+    void changeBackgroundButton();
+
+    QString getRandomName();
+
+    QStringList getRandomNames(int count);
+
 private slots:
     void onImportButtonClicked();
     void onManageButtonClicked();
@@ -70,7 +82,7 @@ private slots:
     void handleProjectSaved(const QString &projectName, const QStringList &names);
     void onModeChanged();//模式切换
     void showLuckyRecords();//展示中奖记录
-
+    void changeBackgroundClicked();
 private:
 
     FileSystem *fileSystem; // 添加文件系统
