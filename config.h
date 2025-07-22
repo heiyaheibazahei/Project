@@ -27,4 +27,9 @@
 // 全局背景音乐
 #define BACKGROUND_MUSIC_PATH "qrc:/music/TouhouRoseQuartz.mp3"
 
+// 按钮音效
+#define OK_SOUND_PATH "qrc:/music/ok.wav"
+#define BACK_SOUND_PATH "qrc:/music/back.wav"
+#define SWITCH_SOUND_PATH "qrc:/music/switch.wav"
+
 #endif // CONFIG_H

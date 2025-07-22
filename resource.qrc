@@ -6,5 +6,8 @@
         <file>music/cheer.mp3</file>
         <file>music/rollingEffect.mp3</file>
         <file>music/TouhouRoseQuartz.mp3</file>
+        <file>music/back.wav</file>
+        <file>music/ok.wav</file>
+        <file>music/switch.wav</file>
     </qresource>
 </RCC>

@@ -11,7 +11,9 @@
 #include "filesystem.h"
 #include "rollingeffectwindow.h"
 #include <QMediaPlayer>
+#include <QSoundEffect>
 #include <QString>
+
 class DrawOptionsWindow : public QWidget
 {
     Q_OBJECT
@@ -87,6 +89,9 @@ private:
 
     FileSystem* m_fileSystem; // 保存FileSystem指针
     QMediaPlayer* m_cheerPlayer; // 中奖音效播放器
+
+    QSoundEffect *m_okSound;
+    QSoundEffect *m_backSound;
 };
 
 #endif // DRAWOPTIONSWINDOW_H

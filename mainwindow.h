@@ -12,6 +12,8 @@
 
 class QMediaPlayer;
 
+class QSoundEffect;
+
 namespace Ui {
 class MainWindow;
 }
@@ -92,6 +94,10 @@ private:
     FileSystem *fileSystem; // 添加文件系统
     QPushButton *importButton;// 添加两个新按钮到界面
     QPushButton *manageButton;
+
+    QSoundEffect *m_okSound;     // 确认按钮音效
+    QSoundEffect *m_backSound;   // 返回按钮音效
+    QSoundEffect *m_switchSound;
 
     QMediaPlayer *m_backgroundMusicPlayer;
 

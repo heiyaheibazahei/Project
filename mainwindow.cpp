@@ -16,6 +16,8 @@
 #include <QTime>
 #include <cstdlib>
 #include <QMediaPlayer>
+#include <QSoundEffect>
+
 QVector<QString> currentNameList;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -24,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //在构造函数之中新增添一个初始化指针
 
     fileSystem(new FileSystem(this)), // 添加文件系统实例
-  drawOptionsWindow(nullptr)
+    drawOptionsWindow(nullptr)
 {
     qsrand(QTime::currentTime().msec());
     ui->setupUi(this);
@@ -38,7 +40,13 @@ MainWindow::MainWindow(QWidget *parent) :
     setMenuBackground();
     setMenuTitle();
 
-
+    // 初始化按钮音效
+    m_okSound = new QSoundEffect(this);
+    m_okSound->setSource(QUrl(OK_SOUND_PATH));
+    m_backSound = new QSoundEffect(this);
+    m_backSound->setSource(QUrl(BACK_SOUND_PATH));
+    m_switchSound = new QSoundEffect(this);
+    m_switchSound->setSource(QUrl(SWITCH_SOUND_PATH));
     // 初始化并播放背景音乐
     m_backgroundMusicPlayer = new QMediaPlayer(this);
     m_backgroundMusicPlayer->setMedia(QUrl(BACKGROUND_MUSIC_PATH));
@@ -52,15 +60,15 @@ MainWindow::MainWindow(QWidget *parent) :
     // 添加其余按钮功能
 
     // 连接文件系统信号
-       connect(fileSystem, &FileSystem::projectSaved, [this](const QString& projectName) {
+    connect(fileSystem, &FileSystem::projectSaved, [this](const QString& projectName) {
            QMessageBox::information(this, "保存成功",
                                    QString("项目 '%1' 已保存").arg(projectName));
-       });
+    });
 
-       connect(fileSystem, &FileSystem::projectDeleted, [this](const QString& projectName) {
+    connect(fileSystem, &FileSystem::projectDeleted, [this](const QString& projectName) {
                QMessageBox::information(this, "已删除",
                                        QString("项目 '%1' 已删除").arg(projectName));
-           });
+    });
 
     // 最下方实现退出按钮
     exit = new QPushButton("退出", this);
@@ -141,6 +149,7 @@ void MainWindow::exitButton()
     // 连接点击事件
     connect(exit, &QPushButton::clicked, this, [this]() {
 
+        m_backSound->play();
         // 创建对话框
         QMessageBox exitDialog;
         exitDialog.setWindowTitle("确认退出");
@@ -223,7 +232,10 @@ void MainWindow::startButton(){
     );
 
     // 添加按钮点击事件
-    connect(start, &QPushButton::clicked, this, &MainWindow::showDrawOptions);
+    connect(start, &QPushButton::clicked, this, [this](){
+        m_okSound->play();
+        showDrawOptions();
+    });
 }
 
 
@@ -285,7 +297,10 @@ void MainWindow::importButton_1(){
         "  background-color: midnightblue;"
         "}"
     );
-    connect(import, &QPushButton::clicked, this, &MainWindow::onImportButtonClicked);
+    connect(import, &QPushButton::clicked, this, [this](){
+        m_okSound->play();
+        onImportButtonClicked();
+    });
 }
 
 void MainWindow::fileManageButton(){
@@ -304,8 +319,10 @@ void MainWindow::fileManageButton(){
         "  background-color: grey;"
         "}"
     );
-    connect(fileManage, &QPushButton::clicked, this, &MainWindow::onManageButtonClicked);
-
+    connect(fileManage, &QPushButton::clicked, this, [this](){
+        m_okSound->play();
+        onManageButtonClicked();
+    });
 }
 
 void MainWindow::showDrawOptions()
@@ -413,6 +430,7 @@ void MainWindow::loadProjectForUse(const QString& projectName)
 }
 
 void MainWindow::onModeChanged() {
+    m_switchSound->play();
     if(m_isLotteryMode) {
         m_isLotteryMode=false;
         drawOptionsWindow->isLottery=false;
@@ -457,7 +475,10 @@ void MainWindow::luckyRecordsButton(){
     )");
     luckyRecords->resize(120,40);
     luckyRecords->move(this->width()-luckyRecords->width(),0);
-     connect(luckyRecords, &QPushButton::clicked, this, &MainWindow::showLuckyRecords);
+    connect(luckyRecords, &QPushButton::clicked, this, [this](){
+        m_okSound->play();
+        showLuckyRecords();
+    });
 }
 
 QString MainWindow::getRandomName() {
