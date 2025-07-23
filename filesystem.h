@@ -36,7 +36,7 @@ private:
 
     QString getProjectFilePath(const QString& projectName);
     void ensureProjectDir();
-    QString luckyPath;   // 中奖人员保存路径
+    QString m_luckyPath;   // 中奖人员保存路径
     void ensureDirExists(const QString& path); // 确保保存中奖记录的目录存在
 };
 

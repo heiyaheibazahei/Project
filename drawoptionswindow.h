@@ -35,6 +35,10 @@ public:
 
     void setFileSystem(FileSystem* fs);
 
+    bool m_isFullScreen = false;
+    void scaleUI();
+    void saveOriginalSizes();
+
 signals:
 
     //返回主界面的函数
@@ -50,7 +54,13 @@ public slots:
     void resetToInitialState(); // 用于重置
     void setNamesList(const QStringList &names); // 用于从主窗口接收名单
 
+
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
+    void setupLayout();
     RollingEffectWindow* m_rollingWindow; // 滚动特效窗口
 
     // 1. 定义状态枚举
@@ -61,7 +71,6 @@ private:
         Multi_ChooseGroup,    // 已选多人和重复选项，进入选择“分组”或“不分组”
         ReadyToStart,          // 所有选项已确定，准备开始
         GroupsDefined
-
     };
 
     // 2. 用一个状态变量替换所有 flags
@@ -79,7 +88,7 @@ private:
     void updateUIForState();
 
     void createOptionButtons();
-    void setupLayout();
+
     QStringList performLottery(); // 声明核心抽奖函数
 
 
@@ -91,6 +100,22 @@ private:
 
     QSoundEffect *okSound;
     QSoundEffect *backSound;
+
+
+
+    // 添加全屏按钮和状态变量
+    QPushButton *fullScreenButton;
+
+
+    // UI缩放数据结构
+    struct WidgetData {
+        QWidget *widget;
+        QSize originalSize;
+        QPoint originalPos;
+        int originalFontSize;
+    };
+    QVector<WidgetData> widgetData;
+    QSize originalWindowSize;
 };
 
 #endif // DRAWOPTIONSWINDOW_H

@@ -55,10 +55,13 @@ public:
     void setMenuTitle();
 
     //模式切换按钮
-    QCheckBox *m_modeCheckBox;
+    QCheckBox *modeCheckBox;
 
     // 模式状态，false就是点名模式
-    bool m_isLotteryMode = false;
+    bool isLotteryMode = false;
+
+    // 添加全屏状态变量
+    bool isFullScreen() const { return m_isFullScreen; }
 
     //退出按钮的功能
     void exitButton();
@@ -79,6 +82,7 @@ public:
     QString getRandomName();
 
     QStringList getRandomNames(int count);
+
 
 private slots:
     void onImportButtonClicked();
@@ -110,9 +114,27 @@ private:
     void showDrawOptions();               // 显示抽奖选项窗口
     void backToMainWindow();              // 返回主窗口
 
+    QLabel *titleLabel = nullptr; // 添加标题标签成员
+    #define BASE_TITLE_SIZE 20    // 添加基准标题字体大小
 
 private:
     Ui::MainWindow *ui;
+
+    // 添加全屏按钮和状态变量
+    QPushButton *fullScreenButton;
+    bool m_isFullScreen = false;
+
+    // 添加用于UI缩放的数据结构
+    struct WidgetData {
+        QWidget *widget;
+        QSize originalSize;
+        QPoint originalPos;
+        int originalFontSize;
+    };
+    QVector<WidgetData> widgetData;
+
+    // 原始窗口大小
+    QSize originalWindowSize;
 };
 
 #endif // MAINWINDOW_H

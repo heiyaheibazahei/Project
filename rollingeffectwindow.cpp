@@ -11,7 +11,7 @@ RollingEffectWindow::RollingEffectWindow(const QStringList& names, const QString
     // 设置窗口为全屏
     setWindowState(Qt::WindowFullScreen);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    setFixedSize(400,60);
+    setFixedSize(800,120);
 
     //全透明的背景
     setStyleSheet("background-color: transparent");

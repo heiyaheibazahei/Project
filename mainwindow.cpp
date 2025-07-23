@@ -17,6 +17,9 @@
 #include <cstdlib>
 #include <QMediaPlayer>
 #include <QSoundEffect>
+#include <QResizeEvent>
+#include <QApplication>
+#include <QScreen>
 
 QVector<QString> currentNameList;
 
@@ -33,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     //主界面的初始化
-    m_modeCheckBox=new QCheckBox("切换模式",this);
+    modeCheckBox=new QCheckBox("切换模式",this);
     drawOptionsWindow = new DrawOptionsWindow();
     background=MAINMENU_PATH;
     mainMenuinitialize();
@@ -93,6 +96,9 @@ MainWindow::MainWindow(QWidget *parent) :
     changeBackground=new QPushButton("更改背景",this);
     changeBackgroundButton();
 
+
+    // 保存原始窗口大小
+        originalWindowSize = QSize(WIN_WIDTH, WIN_HEIGHT);
 
 }
 
@@ -180,8 +186,8 @@ void MainWindow::mainMenuinitialize(){
     setWindowTitle("抽奖系统");
     setFixedSize(WIN_WIDTH, WIN_HEIGHT);
     setWindowIcon(QIcon(WIN_PATH));
-    connect(m_modeCheckBox,&QCheckBox::clicked,this,&MainWindow::onModeChanged);
-    m_modeCheckBox->setStyleSheet(R"(
+    connect(modeCheckBox,&QCheckBox::clicked,this,&MainWindow::onModeChanged);
+    modeCheckBox->setStyleSheet(R"(
                                      /* 圆形指示器样式 */
                                       QCheckBox::indicator {
                                       width: 22px;
@@ -250,7 +256,7 @@ void MainWindow::setMenuTitle(){
             mainLayout->setContentsMargins(0, TOP_MARGIN, 0, 0);
             //创建主布局
 
-            QLabel *titleLabel = new QLabel("多功能抽奖和点名系统", centralWidget);
+            titleLabel = new QLabel("多功能抽奖和点名系统", centralWidget);
                 titleLabel->setAlignment(Qt::AlignCenter);
 
                 // 控制字体
@@ -329,7 +335,7 @@ void MainWindow::showDrawOptions()
 {
     if (!drawOptionsWindow) {
         drawOptionsWindow = new DrawOptionsWindow();
-        //如果在抽奖选项页面选择返回主菜单的话，那么首先点击按钮 
+        //如果在抽奖选项页面选择返回主菜单的话，那么首先点击按钮
     }
 
     //按钮会发出clicked信号，对应槽函数又会发出backToMenu的信号，再调用backToMainWindow的槽函数
@@ -347,7 +353,6 @@ void MainWindow::showDrawOptions()
     // 新增：传递FileSystem实例
     drawOptionsWindow->setFileSystem(this->fileSystem); // 需在DrawOptionsWindow中添加setFileSystem方法
 
-    // 显示抽奖选项窗口
     drawOptionsWindow->show();
 }
 
@@ -431,16 +436,16 @@ void MainWindow::loadProjectForUse(const QString& projectName)
 
 void MainWindow::onModeChanged() {
     switchSound->play();
-    if(m_isLotteryMode) {
-        m_isLotteryMode=false;
+    if(isLotteryMode) {
+        isLotteryMode=false;
         drawOptionsWindow->isLottery=false;
     }
     else {
-        m_isLotteryMode=true;
+        isLotteryMode=true;
         drawOptionsWindow->isLottery=true;
     }
     // 切换按钮文本与勾选框提示
-    if (m_isLotteryMode) {
+    if (isLotteryMode) {
         QMessageBox::information(this,"模式切换提示","已切换至抽奖模式");
         start->setText("抽奖,启动!");         // 启动按钮显示抽奖
         drawOptionsWindow->singleDraw->setText("单人抽奖");
@@ -503,20 +508,17 @@ QStringList MainWindow::getRandomNames(int count) {
 }
 
 void MainWindow::changeBackgroundClicked(){
-    background= QFileDialog::getOpenFileName(this,"选择图片",QDir::homePath(),"(*.jpg *.png)");
-    if(background==NULL){
-        background=MAINMENU_PATH;
-    }
-    qDebug()<<background<<endl;
+    background = QFileDialog::getOpenFileName(this, "选择图片", QDir::homePath(), "(*.jpg *.png)");
+        if (background.isEmpty()) {
+            background = MAINMENU_PATH;
+        }
 
-    QPixmap pixmap(background);
-    if (pixmap.isNull()) {
-        qDebug() << "QPixmap 加载失败或为空";
-        return;
-    }
-    //QFile *backgroundFile= new QFile(background);
-    QPalette palette=this->palette();
-    palette.setBrush(QPalette::Window, QBrush(pixmap.scaled(WIN_WIDTH, WIN_HEIGHT)));
-    this->setPalette(palette);
-    drawOptionsWindow->setPalette(palette);
+        // 更新背景
+        QPalette palette = this->palette();
+        palette.setBrush(QPalette::Window, QBrush(QPixmap(background).scaled(size())));
+        this->setPalette(palette);
+
+        if (drawOptionsWindow) {
+            drawOptionsWindow->setPalette(palette);
+        }
 }

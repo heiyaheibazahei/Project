@@ -14,6 +14,7 @@ class RollingEffectWindow : public QWidget {
     Q_OBJECT
 public:
     explicit RollingEffectWindow(const QStringList& names, const QStringList& winners, QWidget *parent = nullptr);
+    explicit RollingEffectWindow();
     void startRolling(int duration = 3000); // 开始滚动特效
 
 signals:

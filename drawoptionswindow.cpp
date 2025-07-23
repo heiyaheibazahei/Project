@@ -83,6 +83,40 @@ DrawOptionsWindow::DrawOptionsWindow(QWidget *parent)
     okSound->setSource(QUrl(OK_SOUND_PATH));
     backSound = new QSoundEffect(this);
     backSound->setSource(QUrl(BACK_SOUND_PATH));
+
+    // 保存原始窗口大小
+        originalWindowSize = QSize(WIN_WIDTH, WIN_HEIGHT);
+
+        // 创建全屏切换按钮
+        fullScreenButton = new QPushButton("全屏", this);
+        fullScreenButton->setObjectName("fullScreenButton");
+        fullScreenButton->setFixedSize(80, 30);
+        fullScreenButton->setStyleSheet(
+            "QPushButton {"
+            "  background-color: rgba(255, 255, 255, 150);"
+            "  border: 1px solid #aaa;"
+            "  border-radius: 5px;"
+            "  padding: 2px;"
+            "  font-size: 12px;"
+            "}"
+            "QPushButton:hover {"
+            "  background-color: rgba(255, 255, 255, 200);"
+            "}");
+        connect(fullScreenButton, &QPushButton::clicked, [this]() {
+            if (m_isFullScreen) {
+                showNormal();
+                fullScreenButton->setText("全屏");
+            } else {
+                showFullScreen();
+                fullScreenButton->setText("窗口");
+            }
+            m_isFullScreen = !m_isFullScreen;
+            scaleUI();
+        });
+        fullScreenButton->move(0,WIN_HEIGHT-fullScreenButton->height());
+
+        // 保存控件原始数据
+        saveOriginalSizes();
 }
 
 void DrawOptionsWindow::createOptionButtons()
@@ -510,10 +544,26 @@ void DrawOptionsWindow::setFileSystem(FileSystem* fs) {
 void DrawOptionsWindow::performRolling(RollingEffectWindow *rollingWindow,QStringList &winners){
 
     rollingMusic->play();
+    QSize currentsize=size();
 
     //首先需要一个滚动特效，其次需要一个抽中名单
     rollingWindow = new RollingEffectWindow(m_nameList, winners, this);
-    rollingWindow->move(WIN_WIDTH*0.5-rollingWindow->width()*0.5,singleDraw->y()-100);
+
+    if(m_isFullScreen){
+        double widthRatio = static_cast<double>(currentsize.width()) / originalWindowSize.width();
+        double heightRatio = static_cast<double>(currentsize.height()) / originalWindowSize.height();
+        double scaleFactor = qMin(widthRatio, heightRatio);
+         QSize newSize =rollingWindow->size() * scaleFactor;
+         rollingWindow->setFixedSize(newSize);
+
+
+    }
+    if(m_isFullScreen){
+    rollingWindow->move(width()*0.5-rollingWindow->width()*0.5,singleDraw->y()*0.5);
+    }
+    else {
+        rollingWindow->move(width()*0.5-rollingWindow->width()*0.5,singleDraw->y()-100);
+    }
     rollingWindow->show();
     rollingWindow->startRolling();
 
@@ -528,4 +578,73 @@ void DrawOptionsWindow::performRolling(RollingEffectWindow *rollingWindow,QStrin
 
     QMessageBox::information(this, (isLottery ? "抽奖结果" : "点名结果"), winners.join("\n"));
     });
+}
+
+void DrawOptionsWindow::saveOriginalSizes()
+{
+    // 收集所有需要缩放的控件
+    QVector<QWidget*> widgets = {
+        singleDraw, multiDraw, backButton,fullScreenButton
+    };
+
+    // 保存原始数据
+    for (QWidget *widget : widgets) {
+        WidgetData data;
+        data.widget = widget;
+        data.originalSize = widget->size();
+        data.originalPos = widget->pos();
+
+        QFont font = widget->font();
+        data.originalFontSize = font.pointSize();
+        if (data.originalFontSize <= 0) {
+            data.originalFontSize = font.pixelSize();
+        }
+
+        widgetData.append(data);
+    }
+}
+
+void DrawOptionsWindow::scaleUI()
+{
+    QSize currentSize = size();
+    double widthRatio = static_cast<double>(currentSize.width()) / originalWindowSize.width();
+    double heightRatio = static_cast<double>(currentSize.height()) / originalWindowSize.height();
+    double scaleFactor = qMin(widthRatio, heightRatio);
+
+    // 更新背景
+    QPalette palette = this->palette();
+    palette.setBrush(QPalette::Window, QBrush(QPixmap(MAINMENU_PATH).scaled(currentSize)));
+    this->setPalette(palette);
+
+    // 缩放所有控件
+    for (const WidgetData &data : widgetData) {
+        QSize newSize = data.originalSize * scaleFactor;
+        QPoint newPos = QPoint(
+            data.originalPos.x() * widthRatio,
+            data.originalPos.y() * heightRatio
+        );
+
+        data.widget->setFixedSize(newSize);
+        data.widget->move(newPos);
+
+        // 缩放字体
+        if (data.originalFontSize > 0) {
+            QFont font = data.widget->font();
+            int newFontSize = qMax(8, static_cast<int>(data.originalFontSize * scaleFactor));
+            font.setPointSize(newFontSize);
+            data.widget->setFont(font);
+        }
+    }
+
+    // 确保全屏按钮左下角
+   if (fullScreenButton) {
+        int buttonY = this->height() - fullScreenButton->height();
+        fullScreenButton->move(0, buttonY);
+    }
+}
+
+void DrawOptionsWindow::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    //scaleUI();
 }

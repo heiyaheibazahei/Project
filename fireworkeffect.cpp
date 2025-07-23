@@ -27,7 +27,7 @@ FireworkEffect::FireworkEffect(QWidget *parent)
         frameCount++;
 
         // 自动关闭
-        if (frameCount > 100) { // 大约10秒后关闭
+        if (frameCount > 210) { // 大约10秒后关闭
             timer->stop();
             hide();
             deleteLater();
