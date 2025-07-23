@@ -1,17 +1,19 @@
 #include "rollingeffectwindow.h"
-#include <QHBoxLayout>
-#include <QTime>
-#include <cstdlib>
 #include <QFontDatabase>
+#include <QHBoxLayout>
+#include <cstdlib>
+#include <QTime>
+#include <QMediaPlayer>
 #include "config.h"
 
 RollingEffectWindow::RollingEffectWindow(const QStringList& names, const QStringList& winnersList, QWidget *parent)
     : QWidget(parent), allNames(names), winners(winnersList) {
-    // 设置窗口为全屏，半透明背景
+    // 设置窗口为全屏
     setWindowState(Qt::WindowFullScreen);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     setFixedSize(400,60);
 
+    //全透明的背景
     setStyleSheet("background-color: transparent");
 
 
@@ -46,6 +48,9 @@ RollingEffectWindow::RollingEffectWindow(const QStringList& names, const QString
     // 初始化随机数种子
     qsrand(QTime::currentTime().msec());
 
+    // 初始化滚动音乐
+   /* rollingMusic = new QMediaPlayer(this);
+    rollingMusic->setMedia(QUrl(ROLLING_MUSIC_PATH));*/
 }
 
 void RollingEffectWindow::startRolling(int duration) {
@@ -64,6 +69,7 @@ void RollingEffectWindow::startRolling(int duration) {
     stepCounter = 0;
     steps = rollingDuration / 50;
     timer->start(50);
+    //rollingMusic->play();
 }
 
 void RollingEffectWindow::updateName() {
@@ -81,6 +87,7 @@ void RollingEffectWindow::updateName() {
     // 结束滚动
     if (stepCounter >= steps) {
         timer->stop();
+        //rollingMusic->stop();
 
         // 确保最后显示的是中奖者之一
         if (!winners.isEmpty()) {

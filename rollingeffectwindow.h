@@ -8,6 +8,8 @@
 #include <QPropertyAnimation>
 #include <QGraphicsOpacityEffect>
 
+class QMediaPlayer;
+
 class RollingEffectWindow : public QWidget {
     Q_OBJECT
 public:
@@ -30,6 +32,8 @@ private:
     int rollingDuration;
     int steps;
     int stepCounter;
+
+   // QMediaPlayer *rollingMusic;
 };
 
 #endif // ROLLINGEFFECTWINDOW_H

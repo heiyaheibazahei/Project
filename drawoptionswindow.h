@@ -10,7 +10,10 @@
 #include <QMap>
 #include "filesystem.h"
 #include "rollingeffectwindow.h"
+#include <QMediaPlayer>
+#include <QSoundEffect>
 #include <QString>
+
 class DrawOptionsWindow : public QWidget
 {
     Q_OBJECT
@@ -27,10 +30,7 @@ public:
     void performRolling(RollingEffectWindow *rollingWindow, QStringList &winners);
     RollingEffectWindow *rollingWindow;
 
-//    int multi_flag; //三个flag用来判断是选择哪种算法，点击上面的按钮统一设置为1，下面的统一设置为0
-//    int repeat_flag;
-//    int group_flag;
-    bool isLottery;//默认点名模式
+    bool isLottery;//为true时就是抽奖模式
     QString lottery();
 
     void setFileSystem(FileSystem* fs);
@@ -51,8 +51,9 @@ public slots:
     void setNamesList(const QStringList &names); // 用于从主窗口接收名单
 
 private:
-    // 1. 定义状态枚举
     RollingEffectWindow* m_rollingWindow; // 滚动特效窗口
+
+    // 1. 定义状态枚举
     enum class DrawState {
         Initial,              // 初始状态：选择“单人”或“多人”
         Single_ChooseGroup,   // 已选单人，进入选择“分组”或“不分组”
@@ -85,6 +86,11 @@ private:
     QPushButton *backButton;     // 返回按钮
 
     FileSystem* m_fileSystem; // 保存FileSystem指针
+    QMediaPlayer* m_cheerPlayer; // 中奖音效播放器
+    QMediaPlayer* m_rollingMusic;
+
+    QSoundEffect *m_okSound;
+    QSoundEffect *m_backSound;
 };
 
 #endif // DRAWOPTIONSWINDOW_H

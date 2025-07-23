@@ -14,6 +14,7 @@
 #include <QTime>
 #include <cstdlib>
 #include "fireworkeffect.h"
+#include <QMediaPlayer>
 
 DrawOptionsWindow::DrawOptionsWindow(QWidget *parent)
     : QWidget(parent)
@@ -69,6 +70,19 @@ DrawOptionsWindow::DrawOptionsWindow(QWidget *parent)
     palette.setBrush(QPalette::Window, QBrush(QPixmap(MAINMENU_PATH).scaled(WIN_WIDTH, WIN_HEIGHT)));
     this->setPalette(palette);
 
+    // 初始化中奖音效播放器
+    m_cheerPlayer = new QMediaPlayer(this);
+    m_cheerPlayer->setMedia(QUrl(CHEER_MUSIC_PATH));
+
+    //初始化闪现动画的音乐
+    m_rollingMusic = new QMediaPlayer(this);
+    m_rollingMusic->setMedia(QUrl(ROLLING_MUSIC_PATH));
+
+    // 初始化按钮音效
+    m_okSound = new QSoundEffect(this);
+    m_okSound->setSource(QUrl(OK_SOUND_PATH));
+    m_backSound = new QSoundEffect(this);
+    m_backSound->setSource(QUrl(BACK_SOUND_PATH));
 }
 
 void DrawOptionsWindow::createOptionButtons()
@@ -173,6 +187,7 @@ void DrawOptionsWindow::setupLayout()
 
 //---------------------------------------------
 void DrawOptionsWindow::upperButton() {
+    m_okSound->play();
     switch (currentState) {
         case DrawState::Initial:
             m_isSingleMode = true;
@@ -231,6 +246,13 @@ void DrawOptionsWindow::upperButton() {
 
 //----------------------------------------
 void DrawOptionsWindow::bottomButton() {
+    // 根据按钮的功能播放不同的音效
+    // 在“准备开始”和“分组已定义”状态下，下方按钮的功能是“重置”，属于返回/取消类操作
+    if (currentState == DrawState::ReadyToStart || currentState == DrawState::GroupsDefined) {
+        m_backSound->play();
+    } else {
+        m_okSound->play();
+    }
     switch (currentState) {
         case DrawState::Initial:
             m_isSingleMode = false;
@@ -261,6 +283,15 @@ void DrawOptionsWindow::bottomButton() {
 }
 
 void DrawOptionsWindow::backButtonClicked() {
+    // 根据按钮当前的功能，播放正确的音效
+    // 在 GroupsDefined 状态下，按钮功能是“重新管理分组”，属于“确认/执行”类操作
+    if (currentState == DrawState::GroupsDefined) {
+        m_okSound->play();
+    }
+    // 在其他所有状态下，按钮功能都是“返回主菜单”或“返回上一级”，属于“返回/取消”类操作
+    else {
+        m_backSound->play();
+    }
     switch (currentState) {
         case DrawState::Initial:
             emit backToMainMenu();
@@ -477,19 +508,21 @@ void DrawOptionsWindow::setFileSystem(FileSystem* fs) {
 }
 
 void DrawOptionsWindow::performRolling(RollingEffectWindow *rollingWindow,QStringList &winners){
-    //首先需要一个滚动特效，其次需要一个抽中名单
 
+    m_rollingMusic->play();
+
+    //首先需要一个滚动特效，其次需要一个抽中名单
     rollingWindow = new RollingEffectWindow(m_nameList, winners, this);
     rollingWindow->move(WIN_WIDTH*0.5-rollingWindow->width()*0.5,singleDraw->y()-100);
     rollingWindow->show();
     rollingWindow->startRolling();
 
     // 连接滚动结束信号
-
     connect(rollingWindow, &RollingEffectWindow::rollingFinished, this, [this, winners]() {
     // 结果显示
         if (isLottery) {
                 FireworkEffect *fireworks = new FireworkEffect(this);
+                m_cheerPlayer->play(); // 播放欢呼音效
                 fireworks->startFireworks();
             }
 

@@ -9,6 +9,11 @@
 #include "editdialog.h"
 #include "managedocumentsdialog.h"
 #include <QCheckBox>
+
+class QMediaPlayer;
+
+class QSoundEffect;
+
 namespace Ui {
 class MainWindow;
 }
@@ -51,8 +56,9 @@ public:
 
     //模式切换按钮
     QCheckBox *m_modeCheckBox;
+
     // 模式状态，false就是点名模式
-     bool m_isLotteryMode = false;
+    bool m_isLotteryMode = false;
 
     //退出按钮的功能
     void exitButton();
@@ -89,6 +95,11 @@ private:
     QPushButton *importButton;// 添加两个新按钮到界面
     QPushButton *manageButton;
 
+    QSoundEffect *m_okSound;     // 确认按钮音效
+    QSoundEffect *m_backSound;   // 返回按钮音效
+    QSoundEffect *m_switchSound;
+
+    QMediaPlayer *m_backgroundMusicPlayer;
 
     void setupFileManager();    // 在UI初始化时创建这些按钮
 
