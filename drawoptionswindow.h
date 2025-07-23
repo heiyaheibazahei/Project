@@ -86,11 +86,11 @@ private:
     QPushButton *backButton;     // 返回按钮
 
     FileSystem* m_fileSystem; // 保存FileSystem指针
-    QMediaPlayer* m_cheerPlayer; // 中奖音效播放器
-    QMediaPlayer* m_rollingMusic;
+    QMediaPlayer* cheerPlayer; // 中奖音效播放器
+    QMediaPlayer* rollingMusic;
 
-    QSoundEffect *m_okSound;
-    QSoundEffect *m_backSound;
+    QSoundEffect *okSound;
+    QSoundEffect *backSound;
 };
 
 #endif // DRAWOPTIONSWINDOW_H

@@ -41,22 +41,22 @@ MainWindow::MainWindow(QWidget *parent) :
     setMenuTitle();
 
     // 初始化按钮音效
-    m_okSound = new QSoundEffect(this);
-    m_okSound->setSource(QUrl(OK_SOUND_PATH));
-    m_backSound = new QSoundEffect(this);
-    m_backSound->setSource(QUrl(BACK_SOUND_PATH));
-    m_switchSound = new QSoundEffect(this);
-    m_switchSound->setSource(QUrl(SWITCH_SOUND_PATH));
+    okSound = new QSoundEffect(this);
+    okSound->setSource(QUrl(OK_SOUND_PATH));
+    backSound = new QSoundEffect(this);
+    backSound->setSource(QUrl(BACK_SOUND_PATH));
+    switchSound = new QSoundEffect(this);
+    switchSound->setSource(QUrl(SWITCH_SOUND_PATH));
     // 初始化并播放背景音乐
-    m_backgroundMusicPlayer = new QMediaPlayer(this);
-    m_backgroundMusicPlayer->setMedia(QUrl(BACKGROUND_MUSIC_PATH));
+    backgroundMusicPlayer = new QMediaPlayer(this);
+    backgroundMusicPlayer->setMedia(QUrl(BACKGROUND_MUSIC_PATH));
     // 设置循环播放
-    connect(m_backgroundMusicPlayer, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
+    connect(backgroundMusicPlayer, &QMediaPlayer::mediaStatusChanged, this, [this](QMediaPlayer::MediaStatus status) {
         if (status == QMediaPlayer::EndOfMedia) {
-            m_backgroundMusicPlayer->play();
+            backgroundMusicPlayer->play();
         }
     });
-    m_backgroundMusicPlayer->play();
+    backgroundMusicPlayer->play();
     // 添加其余按钮功能
 
     // 连接文件系统信号
@@ -149,7 +149,7 @@ void MainWindow::exitButton()
     // 连接点击事件
     connect(exit, &QPushButton::clicked, this, [this]() {
 
-        m_backSound->play();
+        backSound->play();
         // 创建对话框
         QMessageBox exitDialog;
         exitDialog.setWindowTitle("确认退出");
@@ -233,7 +233,7 @@ void MainWindow::startButton(){
 
     // 添加按钮点击事件
     connect(start, &QPushButton::clicked, this, [this](){
-        m_okSound->play();
+        okSound->play();
         showDrawOptions();
     });
 }
@@ -298,7 +298,7 @@ void MainWindow::importButton_1(){
         "}"
     );
     connect(import, &QPushButton::clicked, this, [this](){
-        m_okSound->play();
+        okSound->play();
         onImportButtonClicked();
     });
 }
@@ -320,7 +320,7 @@ void MainWindow::fileManageButton(){
         "}"
     );
     connect(fileManage, &QPushButton::clicked, this, [this](){
-        m_okSound->play();
+        okSound->play();
         onManageButtonClicked();
     });
 }
@@ -337,7 +337,7 @@ void MainWindow::showDrawOptions()
             this, &MainWindow::backToMainWindow);
 
     // 切换到抽奖窗口前，暂停背景音乐
-    m_backgroundMusicPlayer->pause();
+    backgroundMusicPlayer->pause();
 
     // 新增：在显示窗口前，将当前名单传递过去
     drawOptionsWindow->setNamesList(this->currentNameList);
@@ -359,7 +359,7 @@ void MainWindow::backToMainWindow()
         drawOptionsWindow->hide();
     }
     // 返回主窗口时，继续播放背景音乐
-    m_backgroundMusicPlayer->play();
+    backgroundMusicPlayer->play();
     this->show();
 
 }
@@ -430,7 +430,7 @@ void MainWindow::loadProjectForUse(const QString& projectName)
 }
 
 void MainWindow::onModeChanged() {
-    m_switchSound->play();
+    switchSound->play();
     if(m_isLotteryMode) {
         m_isLotteryMode=false;
         drawOptionsWindow->isLottery=false;
@@ -476,7 +476,7 @@ void MainWindow::luckyRecordsButton(){
     luckyRecords->resize(120,40);
     luckyRecords->move(this->width()-luckyRecords->width(),0);
     connect(luckyRecords, &QPushButton::clicked, this, [this](){
-        m_okSound->play();
+        okSound->play();
         showLuckyRecords();
     });
 }

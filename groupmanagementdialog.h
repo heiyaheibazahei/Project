@@ -45,7 +45,7 @@ private:
 
     // 数据存储
     QStringList m_unassignedNames; // 存储未分配的姓名
-    QMap<QString, QStringList> m_groups; // 核心数据结构：Key是组名，Value是组成员名单
+    QMap<QString, QStringList> groups; // 核心数据结构：Key是组名，Value是组成员名单
 };
 
 #endif // GROUPMANAGEMENTDIALOG_H

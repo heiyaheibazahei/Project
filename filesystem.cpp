@@ -12,13 +12,13 @@ FileSystem::FileSystem(QObject *parent) : QObject(parent)
     // 设置项目存储路径
     QString appDataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     projectPath = "D:/Project/Project/savedProject/";
-    m_luckyPath = "D:/Project/Project/luckyPersons";
+    luckyPath = "D:/Project/Project/luckyPersons";
   //  projectPath = appDataDir + "/projects/";
 
     // 确保项目目录存在
     ensureProjectDir();
     //确保中奖记录的路径存在
-    ensureDirExists(m_luckyPath);
+    ensureDirExists(luckyPath);
 }
 
 void FileSystem::ensureProjectDir()
@@ -197,7 +197,7 @@ bool FileSystem::saveLuckyPersons(const QStringList& winners) {
     // 生成唯一文件名（包含日期时间，避免重复）
     QString fileName = QString("lucky_%1.txt")
         .arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
-    QString filePath = QDir(m_luckyPath).filePath(fileName);
+    QString filePath = QDir(luckyPath).filePath(fileName);
 
     // 写入文件
     QFile file(filePath);
@@ -216,5 +216,5 @@ bool FileSystem::saveLuckyPersons(const QStringList& winners) {
 }
 
 QString FileSystem::getLuckyPath(){
-    return m_luckyPath;
+    return luckyPath;
 }

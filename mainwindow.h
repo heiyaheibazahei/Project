@@ -95,11 +95,11 @@ private:
     QPushButton *importButton;// 添加两个新按钮到界面
     QPushButton *manageButton;
 
-    QSoundEffect *m_okSound;     // 确认按钮音效
-    QSoundEffect *m_backSound;   // 返回按钮音效
-    QSoundEffect *m_switchSound;
+    QSoundEffect *okSound;     // 确认按钮音效
+    QSoundEffect *backSound;   // 返回按钮音效
+    QSoundEffect *switchSound;
 
-    QMediaPlayer *m_backgroundMusicPlayer;
+    QMediaPlayer *backgroundMusicPlayer;
 
     void setupFileManager();    // 在UI初始化时创建这些按钮
 

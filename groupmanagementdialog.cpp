@@ -73,15 +73,15 @@ void GroupManagementDialog::setInitialNames(const QStringList &names)
 
 QMap<QString, QStringList> GroupManagementDialog::getGroups() const
 {
-    return m_groups;
+    return groups;
 }
 
 void GroupManagementDialog::createNewGroup()
 {
     bool ok;
     QString groupName = QInputDialog::getText(this, "新建小组", "请输入小组名称:", QLineEdit::Normal, "", &ok);
-    if (ok && !groupName.isEmpty() && !m_groups.contains(groupName)) {
-        m_groups[groupName] = QStringList(); // 创建一个空的小组
+    if (ok && !groupName.isEmpty() && !groups.contains(groupName)) {
+        groups[groupName] = QStringList(); // 创建一个空的小组
         groupsComboBox->addItem(groupName);
         groupsComboBox->setCurrentText(groupName); // 自动切换到新创建的组
     }
@@ -98,13 +98,13 @@ void GroupManagementDialog::deleteCurrentGroup()
 
     if (ret == QMessageBox::Yes) {
         // 将组成员移回未分配列表
-        m_unassignedNames.append(m_groups[currentGroup]);
+        m_unassignedNames.append(groups[currentGroup]);
         m_unassignedNames.sort(); // 保持排序
         unassignedListWidget->clear();
         unassignedListWidget->addItems(m_unassignedNames);
 
         // 从数据和UI中移除该组
-        m_groups.remove(currentGroup);
+        groups.remove(currentGroup);
         groupsComboBox->removeItem(groupsComboBox->currentIndex());
     }
 }
@@ -130,7 +130,7 @@ void GroupManagementDialog::addMemberToGroup()
     QString currentGroup = groupsComboBox->currentText();
     for (QListWidgetItem* item : selectedItems) {
         QString name = item->text();
-        m_groups[currentGroup].append(name); // 添加到数据模型
+        groups[currentGroup].append(name); // 添加到数据模型
         m_unassignedNames.removeAll(name);   // 从数据模型中移除
         delete unassignedListWidget->takeItem(unassignedListWidget->row(item)); // 从UI移除
     }
@@ -145,7 +145,7 @@ void GroupManagementDialog::removeMemberFromGroup()
     QString currentGroup = groupsComboBox->currentText();
     for (QListWidgetItem* item : selectedItems) {
         QString name = item->text();
-        m_groups[currentGroup].removeAll(name); // 从数据模型移除
+        groups[currentGroup].removeAll(name); // 从数据模型移除
         m_unassignedNames.append(name);       // 添加回未分配列表
         delete groupMembersListWidget->takeItem(groupMembersListWidget->row(item)); // 从UI移除
     }
@@ -159,8 +159,8 @@ void GroupManagementDialog::updateGroupMembersList()
 {
     groupMembersListWidget->clear();
     QString currentGroup = groupsComboBox->currentText();
-    if (m_groups.contains(currentGroup)) {
-        m_groups[currentGroup].sort();
-        groupMembersListWidget->addItems(m_groups[currentGroup]);
+    if (groups.contains(currentGroup)) {
+        groups[currentGroup].sort();
+        groupMembersListWidget->addItems(groups[currentGroup]);
     }
 }
